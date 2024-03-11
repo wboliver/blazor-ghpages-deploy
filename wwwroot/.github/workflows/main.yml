@@ -1,9 +1,8 @@
-name: Deploy
+name: Build and Deploy
 
 on:
   push:
     branches: ["main"]
-
   workflow_dispatch:
 
 permissions:
@@ -16,41 +15,52 @@ concurrency:
     cancel-in-progress: false
 
 jobs:
-    deploy:
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.pages_url }}
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-            
-            - name: Setup .Net
-              uses: actions/setup-dotnet@v3
-              with:
-                dotnet-version: 8.0.x
-            
-            - name: Install .net wasm tools
-              run: dotnet workload install wasm-tools
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: restore dependencies
-              run: dotnet restore
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
 
-            - name: build
-              run: dotnet build -c Release --no-restore
+      - name: Install .net wasm tools
+        run: dotnet workload install wasm-tools
 
-            - name: Publish
-              run: dotnet publish BlazorDeploy.csproj -c:Release -o docs --nologo
+      - name: restore dependencies
+        run: dotnet restore
 
-            - name: setup pages
-              uses: actions/configure-pages@v4
+      - name: build
+        run: dotnet build -c Release --no-restore
 
-            - name: upload
-              uses: actions/upload-pages-artifact@v3
-              with:
-                path: 'docs/wwwroot'
+      - name: Publish
+        run: dotnet publish BlazorDeploy.csproj -c:Release -o docs --nologo
 
-            - name: deploy
-              id: deployment
-              uses: actions/deploy-pages@v4
+      - name: upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: website
+          path: docs/wwwroot
 
+  deploy:
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.pages_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: download
+        uses: actions/download-artifact@v2
+        with:
+          name: website
+          path: docs/wwwroot
+
+      - name: setup pages
+        uses: actions/configure-pages@v4
+
+      - name: deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
