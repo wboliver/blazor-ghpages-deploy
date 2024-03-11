@@ -42,7 +42,6 @@ jobs:
             - name: Publish
               run: dotnet publish BlazorDeploy.csproj -c:Release -o docs --nologo
 
-
             - name: setup pages
               uses: actions/configure-pages@v4
 
