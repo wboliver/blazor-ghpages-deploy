@@ -29,7 +29,7 @@ jobs:
             - name: Setup .Net
               uses: actions/setup-dotnet@v3
               with:
-                  dotnet-version: 8.0.x
+                dotnet-version: 8.0.x
             
             - name: Install .net wasm tools
               run: dotnet workload install wasm-tools
@@ -41,7 +41,7 @@ jobs:
               run: dotnet build -c Release --no-restore
 
             - name: Publish
-                run: dotnet publish BlazorDeploy.csproj -c Release -o docs --no-logo  --no-restore
+              run: dotnet publish BlazorDeploy.csproj -c Release -o docs --no-logo  --no-restore
 
 
             - name: setup pages
