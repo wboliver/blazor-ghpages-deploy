@@ -10,7 +10,6 @@ on:
 permissions:
   contents: read
   pages: write
-  id_token: write
 
 concurrency:
     group: "pages"
@@ -41,13 +40,18 @@ jobs:
               run: dotnet build -c Release --no-restore
 
             - name: Publish
-              run: dotnet publish BlazorDeploy.csproj -c Release -o docs --no-logo  --no-restore
+              run: dotnet publish BlazorDeploy.csproj -c:Release -o docs --nologo
 
 
             - name: setup pages
               uses: actions/configure-pages@v4
 
             - name: upload
+              uses: actions/upload-pages-artifact@v3
+              with:
+                path: 'docs/wwwroot'
+
+            - name: deploy
               id: deployment
               uses: actions/deploy-pages@v4
 
